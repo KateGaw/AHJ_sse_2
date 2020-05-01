@@ -72,14 +72,15 @@ router
     })
     .delete('/:name', async(ctx, next) => {
         console.log('DELETE!!!' + ctx.params.name);
-        const index = clients.findIndex(({ name }) => name === ctx.params.name);
+        const index = clients.findIndex((name) => name === ctx.params.name);
+
         if (index !== -1) {
             clients.splice(index, 1);
         }
-        ctx.response.status = 204;
+        // ctx.response.status = 204;
     });
 
-wsServer.on("connection", (ws, req) => {
+wsServer.on("connection", (ws, request) => {
     console.log("connection");
     ws.on("message", (mess) => {
         console.log("mess");
@@ -88,12 +89,14 @@ wsServer.on("connection", (ws, req) => {
             .forEach((o) => o.send(mess));
     });
 
-    ws.on("close", (mess) => {
-        console.log("close -> deleting");
+    ws.on('close', () => {
+        console.log('close');
         [...wsServer.clients]
         .filter((o) => o.readyState === WS.OPEN)
-            .forEach((o) => o.send(JSON.stringify({ type: "deleting" })));
-        ws.close();
+            .forEach((o) => o.send(JSON.stringify({ type: 'deleting' })));
+    });
+    ws.on('change', () => {
+        console.log('change');
     });
 
     [...wsServer.clients]
